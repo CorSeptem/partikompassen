@@ -36,6 +36,16 @@ test("varje partis scores summerar till exakt 400", () => {
   }
 });
 
+test("varje parti har minst en giltig https-källänk", () => {
+  for (const p of DATA.parties) {
+    assert.ok(Array.isArray(p.sourceUrls) && p.sourceUrls.length >= 1, `${p.id} saknar sourceUrls`);
+    for (const u of p.sourceUrls) {
+      assert.ok(u.startsWith("https://"), `${p.id}: ogiltig URL ${u}`);
+      new URL(u); // kastar vid trasig URL
+    }
+  }
+});
+
 test("neutral profil summerar till exakt 400", () => {
   const neutral = ZeroSum.neutralProfile();
   assert.equal(sum(neutral), TOTAL);

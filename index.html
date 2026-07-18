@@ -16,6 +16,8 @@
     --accent-contrast: #ffffff;
     --ring: #e4e3db;
     --focus: #1a5fb4;
+    --gain: #1a7f37;
+    --lose: #b3261e;
     --radius: 10px;
     --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.05);
     color-scheme: light dark;
@@ -31,6 +33,8 @@
       --accent-contrast: #17171a;
       --ring: #2b2a2f;
       --focus: #7cb0ff;
+      --gain: #57c973;
+      --lose: #ff7b72;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 18px rgba(0,0,0,.35);
     }
   }
@@ -163,6 +167,13 @@
     font-size: 12px;
     font-weight: 700;
     fill: var(--accent);
+    transition: fill 150ms ease-out;
+    pointer-events: none;
+  }
+  .axis-value.gaining { fill: var(--gain); }
+  .axis-value.losing { fill: var(--lose); }
+  @media (prefers-reduced-motion: reduce) {
+    .axis-value { transition: none; }
   }
 
   .sliders {
@@ -177,6 +188,11 @@
     align-items: center;
     gap: 0.5rem;
   }
+  .slider-label-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
   .slider-row label {
     font-size: 0.85rem;
     display: flex;
@@ -184,7 +200,7 @@
     gap: 0.3rem;
     cursor: pointer;
   }
-  .slider-row .lock-btn {
+  .lock-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -326,7 +342,7 @@
     <div class="card">
       <div class="budget-indicator"><span id="budget-value">400</span>/400 <span class="unit">poäng fördelade</span></div>
       <div class="radar-wrap">
-        <svg id="radar" viewBox="0 0 380 380" role="img" aria-label="Spindeldiagram över dina prioriteringar"></svg>
+        <svg id="radar" viewBox="0 0 380 380" role="group" aria-label="Spindeldiagram över dina prioriteringar — klicka på en axeletikett för att låsa området"></svg>
       </div>
       <p class="tooltip-msg" id="lock-tooltip" role="status" aria-live="polite"></p>
 
@@ -434,48 +450,56 @@ var DATA = {
       id: "S", name: "Socialdemokraterna", color: "#E8112d",
       scores: [60, 60, 60, 60, 55, 40, 45, 20],
       source: "Valplattform / val-2026 (socialdemokraterna.se/val-2026)",
+      sourceUrls: ["https://www.socialdemokraterna.se/val-2026"],
       motivation: "Tre likvärdiga huvudpelare: stark ekonomi i plånboken (plånbokslöfte, tillväxtplan), stark välfärd (kortare vårdköer, mindre klasser, vinstförbud i skolan, äldreomsorg) och trygghet. Jobbpolitiken bred (jobbtrappa, aktivitetsplikt, slopad karens). Migration: 'strama linjen ligger fast' men få nya förslag. Totalförsvaret ska byggas ut. Klimat nämns främst som del av tillväxt/omställning, utan egen pelare – tydligt nedprioriterat relativt 2018/2022."
     },
     {
       id: "M", name: "Moderaterna", color: "#52BDEC",
       scores: [40, 40, 75, 55, 65, 45, 50, 30],
       source: "Vallöften 2026 (moderaterna.se/valloften-2026) + Idéprogram 'Frihet och ansvar' (2021)",
+      sourceUrls: ["https://moderaterna.se/valloften-2026/", "https://moderaterna.se/app/uploads/2022/01/Ideprogram_digitalt_9dec.pdf"],
       motivation: "Vallöftena domineras av plånbok/skatt: 5 000 kr mer för barnfamiljer, höjt ISK-tak, sänkt pensionsskatt, skattefritt månadskort, slöserikommission i stället för skattehöjningar. Trygghet stark tvåa (10 000 poliskameror, fler vakter, dubbla straff för kvinnofrid). Försvar: drönarvärn 10 000 personer. Arbetslinjen genomsyrar idéprogrammet. Vård/skola finns men utan motsvarande skärpa i löftena. Klimat: teknik- och kärnkraftsoptimism, lägre profil."
     },
     {
       id: "SD", name: "Sverigedemokraterna", color: "#DDDD00",
       scores: [50, 35, 55, 40, 70, 80, 55, 15],
       source: "Valplattform 2026 'Hemma i Sverige' (sd.se, PDF juli 2026)",
+      sourceUrls: ["https://www.sd.se/wp-content/uploads/2026/07/valplattform-2026.pdf"],
       motivation: "Struktur 'Trygg – Fri – Svensk'. 'Svensk'-delen (stram invandring, assimilering, uppvärderat medborgarskap, återvandring, kamp mot islamism, svenska språket) är plattformens ideologiska kärna → högst poäng. 'Trygg': gängjakt, pedofilregister, fler poliser, totalförsvar, men även tandvård/närsjukhus/a-kassa (ger vård+arbete substans). 'Fri': sänkta skatter på el/drivmedel/mat, regelförenkling, landsbygd. Klimat explicit bortprioriterat: 'inte utrymme för ineffektiva klimatpolitiska satsningar'."
     },
     {
       id: "C", name: "Centerpartiet", color: "#009933",
       scores: [55, 40, 65, 50, 45, 35, 45, 65],
       source: "Valmanifest 2026 'Sverige kan mer', 328 förslag (val2026.centerpartiet.se)",
+      sourceUrls: ["https://www.centerpartiet.se/centerpartiets-politik/valmanifest-2026"],
       motivation: "Sju huvudområden där 'Fler jobb' (slopad anställningsskatt, regelförenklingsmyndighet, stopp för kompetensutvisningar) och 'Minskade utsläpp' (halverade tillståndstider, fossilfri el, elbilsbonus) uttryckligen anges som partiets prioriteringar → högst poäng på ekonomi/företagande och klimat. 'Fungerande välfärd i hela landet' (fast läkarkontakt, ungas psykiska hälsa) och 50 mdr till landsbygden (fördelas ekonomi/vård). Rättsstat och försvar finns som egna områden men med mindre tyngd. Migration lägst profil."
     },
     {
       id: "KD", name: "Kristdemokraterna", color: "#000077",
       scores: [70, 45, 50, 45, 55, 45, 50, 40],
       source: "Principprogram (kristdemokraterna.se, PDF 2025/2026)",
+      sourceUrls: ["https://kristdemokraterna.se/download/18.7932b3db19c9887db6c221c/1773136182639/Principprogram%20hemsida.pdf"],
       motivation: "Vård & omsorg är KD:s tydligaste profilområde: solidariskt finansierad vård som 'välfärdens kärna', vårdgarantier, äldreomsorg med värdighetsgarantier, familj som grund. Rättssamhälle/kriminalpolitik eget kapitel med brottsofferfokus. Försvar/säkerhet omfattande kapitel (Nato-artikel 5, totalförsvarsplikt). Migration: stram linje, hjälp i närområdet, krav för medborgarskap. Skola: valfrihet, ordning, fostransuppdrag. Förvaltarskapsprincipen ger klimatet en mellanposition."
     },
     {
       id: "L", name: "Liberalerna", color: "#006AB3",
       scores: [45, 75, 55, 40, 50, 45, 45, 45],
       source: "Valmanifest 2026 'För din frihet' (liberalerna.se) + Partiprogram 2025 (PDF)",
+      sourceUrls: ["https://www.liberalerna.se/liberalernas-valmanifest-2026", "https://www.liberalerna.se/wp-content/uploads/liberalernas-partiprogram-2025.pdf"],
       motivation: "Skolan uttryckligen först: 'framtiden börjar i skolan', två av åtta manifestdelar är skola/trygg start (mindre barngrupper, ordning i klassrummet, världens bästa skola); partiprogrammet ägnar skolan störst utrymme av alla sakområden. 'Ansträngning ska löna sig' (sänkt skatt på utbildning/arbete, sparande) ger ekonomi tvåan. Skydd för friheten (brott, hedersförtryck) och husläkarreform. Försvar/EU/Nato och klimat (kärnkraftspositiv, EU-styrmedel) jämnstarka. Migration: integrationkrav + värnad asylrätt."
     },
     {
       id: "V", name: "Vänsterpartiet", color: "#DA291C",
       scores: [65, 50, 60, 70, 35, 35, 25, 60],
       source: "Partiprogram antaget av kongressen 2024 (vansterpartiet.se/resursbank/partiprogram)",
+      sourceUrls: ["https://www.vansterpartiet.se/resursbank/partiprogram/"],
       motivation: "Full sysselsättning och arbetsplatsmakt är programmets röda tråd (arbetstidsförkortning, stärkt arbetsrätt, trygghetssystem) → högst poäng. Välfärd utan vinst (vård, skola, tandvård in i högkostnadsskyddet) och ekonomisk omfördelning (höjd skatt på förmögenhet/arv/höga inkomster, gemensamt ägande) väger tungt. Klimat: utsläppsbudget, stora statliga investeringar, nej till kärnkraft. Försvar tydligt nedprioriterat: sikte på att lämna Nato, nedrustning. Brott: förebyggande snarare än straff. Migration: human asylrätt men begränsat utrymme."
     },
     {
       id: "MP", name: "Miljöpartiet", color: "#83CF39",
       scores: [50, 45, 45, 45, 45, 40, 40, 90],
       source: "Politiskt handlingsprogram 2026–2030 (mp.se, PDF april 2026)",
+      sourceUrls: ["https://www.mp.se/wp-content/uploads/2026/04/politiskt-handlingsprogram-2026-2030.pdf"],
       motivation: "Klimat/miljö dominerar totalt: tre inledande kapitel (rättvis klimatomställning, ekosystem/biologisk mångfald, djurvälfärd) med koldioxidbudget, klimatfond, nationell utsläppshandel, järnvägssatsning, havsmiljölag, nej till kärnkraft → 90. Övriga områden medvetet breda men sekundära: jämlik välfärd/psykisk hälsa, jämlik skola, trygghet med förebyggande fokus, human migration, grön ekonomi, stärkt beredskap. Försvar/beredskap finns (civilförsvar, desinformation) men lägst egen profil."
     }
   ]
@@ -699,7 +723,7 @@ var Match = (function () {
       var score = Math.max(0, Math.min(1, raw)) * 100;
       return {
         id: p.id, name: p.name, color: p.color,
-        source: p.source, motivation: p.motivation,
+        source: p.source, sourceUrls: p.sourceUrls, motivation: p.motivation,
         scores: p.scores,
         matchPercent: score, cos: cos, distance: dist
       };
@@ -790,7 +814,7 @@ var Match = (function () {
     if (view === "prioritering") renderPrioritering();
     if (view === "resultat") renderResultat();
     if (view === "metod") renderMetod();
-    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    window.scrollTo(0, 0);
   }
 
   document.addEventListener("click", function (e) {
@@ -868,15 +892,25 @@ var Match = (function () {
     svg.appendChild(svgEl("polygon", { class: "ghost-shape", id: "ghost-poly", points: "" }));
     // user shape
     svg.appendChild(svgEl("polygon", { class: "user-shape", id: "user-poly", points: "" }));
-    // draggable points (+ larger invisible hit targets for touch)
+    // draggable points (+ larger invisible hit targets for touch);
+    // hit-cirkeln läggs sist så att den ligger överst i målordningen —
+    // annars fångar den synliga punkten/siffertexten pekhändelserna
     for (var j = 0; j < N; j++) {
-      var hit = svgEl("circle", { class: "axis-point-hit", r: 22, "data-axis-index": j });
-      hit.addEventListener("pointerdown", onPointerDown);
-      svg.appendChild(hit);
       var dot = svgEl("circle", { class: "axis-point", r: 7, "data-axis-index": j });
       svg.appendChild(dot);
       var valText = svgEl("text", { class: "axis-value", "data-axis-index": j, "text-anchor": "middle" });
       svg.appendChild(valText);
+      var hit = svgEl("circle", { class: "axis-point-hit", r: 22, "data-axis-index": j });
+      hit.addEventListener("pointerdown", onPointerDown);
+      svg.appendChild(hit);
+    }
+  }
+
+  function setDotDragging(idx, on) {
+    var dot = svg.querySelector('.axis-point[data-axis-index="' + idx + '"]');
+    if (dot) {
+      dot.setAttribute("r", on ? 10 : 7);
+      dot.classList.toggle("dragging", on);
     }
   }
 
@@ -884,9 +918,11 @@ var Match = (function () {
     var idx = Number(e.currentTarget.getAttribute("data-axis-index"));
     if (state.locked[idx] || ZeroSum.isDragBlocked(state.locked)) return;
     dragState = { idx: idx };
+    setDotDragging(idx, true);
     e.currentTarget.setPointerCapture(e.pointerId);
     document.addEventListener("pointermove", onPointerMove);
     document.addEventListener("pointerup", onPointerUp);
+    document.addEventListener("pointercancel", onPointerUp);
   }
   function onPointerMove(e) {
     if (!dragState) return;
@@ -902,14 +938,39 @@ var Match = (function () {
     applyAxisValue(dragState.idx, value);
   }
   function onPointerUp() {
+    if (dragState) setDotDragging(dragState.idx, false);
     dragState = null;
     document.removeEventListener("pointermove", onPointerMove);
     document.removeEventListener("pointerup", onPointerUp);
+    document.removeEventListener("pointercancel", onPointerUp);
+  }
+
+  // Flow-färgning: när poäng omfördelas färgas övriga axlars siffror kort
+  // grönt (får poäng) eller rött (förlorar poäng) för att visualisera
+  // nollsumman. Rensas 150 ms efter senaste ändringen.
+  var flowClearTimer = null;
+  function showFlow(changedIdx, before, after) {
+    for (var i = 0; i < N; i++) {
+      var valText = svg.querySelector('.axis-value[data-axis-index="' + i + '"]');
+      if (!valText) continue;
+      var delta = after[i] - before[i];
+      valText.classList.toggle("gaining", i !== changedIdx && delta > 0);
+      valText.classList.toggle("losing", i !== changedIdx && delta < 0);
+    }
+    if (flowClearTimer) clearTimeout(flowClearTimer);
+    flowClearTimer = setTimeout(function () {
+      var texts = svg.querySelectorAll(".axis-value");
+      for (var t = 0; t < texts.length; t++) {
+        texts[t].classList.remove("gaining", "losing");
+      }
+    }, 150);
   }
 
   function applyAxisValue(idx, rawValue) {
+    var before = state.scores;
     state.scores = ZeroSum.redistribute(state.scores, idx, rawValue, state.locked);
     renderState();
+    showFlow(idx, before, state.scores);
   }
 
   function toggleLock(idx) {
@@ -946,6 +1007,8 @@ var Match = (function () {
       dot.classList.toggle("locked", state.locked[i]);
       var label = svg.querySelector('.axis-label[data-axis-index="' + i + '"]');
       label.classList.toggle("locked", state.locked[i]);
+      label.textContent = (state.locked[i] ? "🔒 " : "") + DATA.axes[i].label;
+      label.setAttribute("aria-pressed", state.locked[i] ? "true" : "false");
       var valText = svg.querySelector('.axis-value[data-axis-index="' + i + '"]');
       valText.setAttribute("x", p.x);
       valText.setAttribute("y", p.y - 12);
@@ -960,7 +1023,10 @@ var Match = (function () {
       var row = document.createElement("div");
       row.className = "slider-row";
       row.innerHTML =
+        '<div class="slider-label-cell">' +
+        '<button type="button" class="lock-btn" id="lock-' + ax.id + '" data-axis-index="' + i + '" aria-pressed="false" aria-label="Lås ' + ax.label + '">🔓</button>' +
         '<label for="slider-' + ax.id + '">' + ax.label + '</label>' +
+        '</div>' +
         '<input type="range" id="slider-' + ax.id + '" min="' + MIN + '" max="' + MAX + '" step="1" data-axis-index="' + i + '" aria-label="' + ax.label + '">' +
         '<output for="slider-' + ax.id + '"></output>';
       wrap.appendChild(row);
@@ -971,16 +1037,23 @@ var Match = (function () {
         applyAxisValue(idx, Number(e.target.value));
       }
     });
+    wrap.addEventListener("click", function (e) {
+      var btn = e.target.closest(".lock-btn");
+      if (btn) toggleLock(Number(btn.getAttribute("data-axis-index")));
+    });
   }
 
   function updateSlidersVisual() {
     DATA.axes.forEach(function (ax, i) {
       var input = document.getElementById("slider-" + ax.id);
       input.value = state.scores[i];
-      input.disabled = state.locked[i] || ZeroSum.isDragBlocked(state.locked) && !state.locked[i] && false;
       input.disabled = state.locked[i];
       var out = input.nextElementSibling;
       out.textContent = state.scores[i];
+      var lockBtn = document.getElementById("lock-" + ax.id);
+      lockBtn.textContent = state.locked[i] ? "🔒" : "🔓";
+      lockBtn.setAttribute("aria-pressed", state.locked[i] ? "true" : "false");
+      lockBtn.setAttribute("aria-label", (state.locked[i] ? "Lås upp " : "Lås ") + ax.label);
     });
   }
 
@@ -1068,7 +1141,7 @@ var Match = (function () {
         '<svg class="mini-radar" viewBox="0 0 380 380" aria-hidden="true"></svg>' +
         '<p class="motivation">' + m.motivation + '</p>' +
         '<div class="diffs">' + diffChips + '</div>' +
-        '<a class="source" href="#" tabindex="-1">Källa: ' + m.source + '</a>';
+        '<a class="source" href="' + m.sourceUrls[0] + '" target="_blank" rel="noopener">Källa: ' + m.source + '</a>';
       details.appendChild(summary);
       details.appendChild(detailDiv);
       li.appendChild(details);
@@ -1136,7 +1209,12 @@ var Match = (function () {
 
     var sourceList = document.getElementById("source-list");
     sourceList.innerHTML = DATA.parties.map(function (p) {
-      return "<li><strong>" + p.id + ":</strong> " + p.source + "</li>";
+      var links = p.sourceUrls.map(function (u) {
+        var host;
+        try { host = new URL(u).hostname.replace(/^www\./, ""); } catch (err) { host = u; }
+        return '<a href="' + u + '" target="_blank" rel="noopener">' + host + '</a>';
+      }).join(", ");
+      return "<li><strong>" + p.id + ":</strong> " + p.source + " — " + links + "</li>";
     }).join("");
   }
 

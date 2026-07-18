@@ -39,8 +39,26 @@ Kör själv: `node --test` (automatiserat) från projektroten.
 | Fungerar med enbart tangentbord (sliders fokusbara, piltangenter ±1, nollsumma upprätthålls) | **PASS** — fokuserade en slider, `ArrowRight` ökade värdet med exakt 1, budgetindikatorn förblev 400/400 |
 | Fungerar med touch på 360 px-skärm | **PASS** — testat i 360×800-viewport; slider-höjd (touch-mål) mättes till 44 px enligt CSS-mediaquery för `max-width: 400px`. Draggbara SVG-punkter har 44 px osynlig träffyta (`.axis-point-hit`, r=22) oavsett skärmstorlek |
 | Delnings-URL återskapar exakt profil vid inläsning | **PASS** — genererade delningslänk från ett resultat, öppnade den i en ny sida: landade direkt på resultatvyn med identisk toppmatchning. Ogiltig `?p=garbage` faller korrekt tillbaka till introvyn (neutral profil) |
-| Metodvyn visar full matris, motiveringar och alla 8 källänkar | **PASS** — matristabellen har 9 rader (8 politikområden + summeringsrad), källistan har exakt 8 poster (en per parti) |
+| Metodvyn visar full matris, motiveringar och alla 8 källänkar | **PASS** — matristabellen har 9 rader (8 politikområden + summeringsrad), källistan har 8 poster med totalt 10 klickbara https-länkar (M och L har två källdokument var). I v1 var källorna enbart text — åtgärdat i v2 efter granskning, nu riktiga `<a href>` med `target="_blank"` i både metodvyn och resultatraderna. Automatiskt test verifierar att varje parti har minst en giltig https-URL |
 | Disclaimer synlig på intro- och resultatvyn | **PASS** — verifierat visuellt i DOM: disclaimer-text finns i både `#view-intro` och `#view-resultat` |
+
+## Andra granskningen (v2) — åtgärdat efter kodgenomgång
+
+En andra granskning av hela leveransen identifierade och åtgärdade följande.
+Samtliga fixar verifierades med automatiska tester (12 st, alla gröna) och
+Playwright end-to-end i Chromium:
+
+1. **Källänkar var inte länkar** — metodvyn visade bara källtexterna och resultatradernas "källänk" var `href="#"` (scrollade till sidtoppen vid klick). Nu: `sourceUrls` per parti i datamatrisen (URL:erna från spec §3.3), riktiga länkar med `target="_blank" rel="noopener"` i båda vyerna. Nytt automatiskt test bevakar att varje parti har minst en giltig https-URL.
+2. **🔒-ikon saknades** (spec §4.1) — låsta axlar visar nu 🔒-prefix i radaretiketten och 🔒/🔓-knapp i slider-raden.
+3. **Aktiv dragpunkt förstoras** (spec §4.4) — r 7→10 under drag. Verifierat via Playwright (pointer down/up).
+4. **Poängflödesanimation** (spec §4.1) — vid omfördelning färgas övriga axlars siffror grönt (får poäng) / rött (förlorar poäng) i 150 ms, med `prefers-reduced-motion`-respekt. Verifierat: 7 axlar rödmarkerade direkt efter en höjning, rensade efter 150 ms.
+5. **`pointercancel` hanterades inte** — avbruten drag (notis, gest, orienteringsbyte) lämnade drag-lyssnare aktiva. Nu registreras/avregistreras `pointercancel` som `pointerup`.
+6. **Död kod städad** — dubbel `input.disabled`-rad, meningslös `"instant" in window`-check, oanvänd `.lock-btn`-CSS (används nu på riktigt av slider-låsknapparna).
+7. **Lås gick inte att styra från slider-området** — mobilanvändarens primära reglage saknade låsfunktion; nu 44px-låsknappar per slider-rad med `aria-pressed`.
+8. **`role="img"` på interaktiv SVG** dolde de fokuserbara låsetiketterna för skärmläsare — bytt till `role="group"`.
+9. **`aria-pressed` saknades** på radarns låsetiketter — tillagt och synkat vid varje toggle.
+10. **`tabindex="-1"` på källänken** — borttaget; länken är nu nåbar med tangentbord.
+11. **Ny bugg hittad under verifieringen: dragpunkten gick inte att greppa mitt på** — hit-cirkeln låg *under* den synliga punkten och siffertexten i SVG:ns målordning, så pekhändelser mitt på punkten nådde aldrig drag-ytan. Fixat genom att lägga hit-cirkeln sist (överst) och sätta `pointer-events: none` på siffertexten. Verifierat: pointer down mitt på punkten startar nu drag.
 
 ## Under testningen upptäckt och åtgärdat
 
