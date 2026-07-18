@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prioriteringskompassen 2026</title>
+<meta name="description" content="Fördela 400 prioriteringspoäng över 8 politikområden och se vilket parti som prioriterar mest likt dig inför valet 2026.">
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #55564f;
+    --border: #dcdbd4;
+    --accent: #2b2b28;
+    --accent-contrast: #ffffff;
+    --ring: #e4e3db;
+    --focus: #1a5fb4;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.05);
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17171a;
+      --surface: #201f23;
+      --ink: #f1f0ec;
+      --ink-soft: #b7b6ad;
+      --border: #38373d;
+      --accent: #f1f0ec;
+      --accent-contrast: #17171a;
+      --ring: #2b2a2f;
+      --focus: #7cb0ff;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 18px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--focus); }
+  button, select, input { font-family: inherit; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  header.site {
+    padding: 1.25rem 1rem 0.5rem;
+    text-align: center;
+  }
+  header.site h1 {
+    font-size: clamp(1.3rem, 4vw, 1.9rem);
+    margin: 0 0 0.15rem;
+    letter-spacing: -0.01em;
+  }
+  header.site .kicker {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem 4rem;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; animation: fadein 150ms ease-out; }
+  @media (prefers-reduced-motion: reduce) {
+    .view.active { animation: none; }
+  }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.25rem;
+  }
+
+  .disclaimer {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    border-left: 3px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border: none;
+    border-radius: 999px;
+    padding: 0.7rem 1.3rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  /* Intro */
+  #view-intro p { max-width: 60ch; }
+  #view-intro .center { text-align: center; }
+
+  /* Radar */
+  .budget-indicator {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.75rem;
+  }
+  .budget-indicator .unit { font-weight: 400; color: var(--ink-soft); font-size: 0.85rem; }
+  .radar-wrap { display: flex; justify-content: center; }
+  svg#radar { width: 100%; max-width: 420px; height: auto; touch-action: none; overflow: visible; }
+  .axis-line { stroke: var(--border); stroke-width: 1; }
+  .grid-ring { fill: none; stroke: var(--ring); stroke-width: 1; }
+  .user-shape { fill: rgba(43,43,40,0.18); stroke: var(--accent); stroke-width: 2; }
+  @media (prefers-color-scheme: dark) {
+    .user-shape { fill: rgba(241,240,236,0.14); }
+  }
+  .ghost-shape { fill-opacity: 0.12; stroke-width: 2; stroke-dasharray: 4 3; }
+  .axis-point {
+    fill: var(--accent);
+    stroke: var(--surface);
+    stroke-width: 2;
+    cursor: grab;
+  }
+  .axis-point.locked { fill: var(--ink-soft); }
+  .axis-point-hit { fill: transparent; cursor: grab; }
+  .axis-point.dragging, .axis-point-hit.dragging { cursor: grabbing; }
+  .axis-label {
+    font-size: 11px;
+    fill: var(--ink);
+    cursor: pointer;
+    user-select: none;
+  }
+  .axis-label.locked { fill: var(--focus); font-weight: 700; }
+  .axis-value {
+    font-size: 12px;
+    font-weight: 700;
+    fill: var(--accent);
+  }
+
+  .sliders {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+  }
+  .slider-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .slider-row label {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+  }
+  .slider-row .lock-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.4rem;
+    min-width: 44px;
+    min-height: 44px;
+    line-height: 1;
+  }
+  .slider-row input[type=range] {
+    width: 100%;
+    accent-color: var(--accent);
+    height: 28px;
+  }
+  @media (max-width: 400px) {
+    .slider-row input[type=range] { height: 44px; }
+  }
+  .slider-row output {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    min-width: 2.4ch;
+    text-align: right;
+  }
+
+  .tooltip-msg {
+    font-size: 0.85rem;
+    color: #b3261e;
+    text-align: center;
+    min-height: 1.2em;
+    margin-top: 0.5rem;
+  }
+
+  .ghost-row {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .ghost-row select { padding: 0.4rem; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+
+  /* Results */
+  .top-match {
+    text-align: center;
+    padding: 1.5rem 1rem;
+  }
+  .top-match .swatch {
+    width: 56px; height: 56px; border-radius: 50%;
+    margin: 0 auto 0.6rem;
+    border: 2px solid var(--border);
+  }
+  .top-match .pct { font-size: 2.2rem; font-weight: 800; }
+  .top-match .name { font-size: 1.3rem; font-weight: 700; }
+
+  .rank-list { list-style: none; margin: 1.25rem 0 0; padding: 0; }
+  .rank-row {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .rank-row summary {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1.6rem 1fr auto;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.75rem 0.9rem;
+    cursor: pointer;
+  }
+  .rank-row summary::-webkit-details-marker { display: none; }
+  .rank-num { font-weight: 700; color: var(--ink-soft); }
+  .rank-bar-wrap { position: relative; }
+  .rank-bar-track {
+    background: var(--ring);
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .rank-bar-fill { height: 100%; border-radius: 999px; }
+  .rank-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+  .rank-pct { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .rank-detail { padding: 0 0.9rem 1rem; font-size: 0.9rem; }
+  .rank-detail .diffs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0; }
+  .diff-chip {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.78rem;
+  }
+  .rank-detail .motivation { color: var(--ink-soft); }
+  .rank-detail .source { display: block; margin-top: 0.4rem; font-size: 0.8rem; }
+  .mini-radar { width: 140px; height: 140px; float: right; margin: 0 0 0.5rem 0.75rem; }
+
+  /* Metod */
+  table.matrix { border-collapse: collapse; width: 100%; font-size: 0.82rem; margin: 1rem 0; }
+  table.matrix th, table.matrix td { border: 1px solid var(--border); padding: 0.4rem 0.5rem; text-align: center; }
+  table.matrix th { background: var(--ring); }
+  table.matrix td:first-child, table.matrix th:first-child { text-align: left; }
+  .source-list { font-size: 0.85rem; }
+  .source-list li { margin-bottom: 0.3rem; }
+
+  .back-link { display: inline-block; margin-bottom: 1rem; font-size: 0.85rem; }
+
+  footer.site {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    padding: 2rem 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="kicker">Valet 2026 &middot; 13 september</div>
+  <h1>Prioriteringskompassen</h1>
+</header>
+
+<main>
+
+  <!-- ===================== VY: INTRO ===================== -->
+  <section id="view-intro" class="view" data-view="intro">
+    <div class="card center">
+      <p>Politik är prioriteringar. Ökar man på ett område måste något annat minska.
+        Fördela 400 poäng över 8 politikområden precis som partierna gör i sina program
+        — och se vilket parti som prioriterar mest likt dig.</p>
+      <p>Du har en fast budget. Drar du upp ett område sjunker de andra automatiskt.</p>
+      <button class="btn" id="btn-start">Sätt dina prioriteringar</button>
+      <p class="disclaimer">Ingen officiell valkompass — bygger på vår tolkning av
+        partiernas program. Läs mer under <a href="#" data-nav="metod">Metod</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===================== VY: PRIORITERING ===================== -->
+  <section id="view-prioritering" class="view" data-view="prioritering">
+    <div class="card">
+      <div class="budget-indicator"><span id="budget-value">400</span>/400 <span class="unit">poäng fördelade</span></div>
+      <div class="radar-wrap">
+        <svg id="radar" viewBox="0 0 380 380" role="img" aria-label="Spindeldiagram över dina prioriteringar"></svg>
+      </div>
+      <p class="tooltip-msg" id="lock-tooltip" role="status" aria-live="polite"></p>
+
+      <div class="sliders" id="sliders"></div>
+
+      <div class="ghost-row">
+        <label for="ghost-select">Visa ett partis profil som spökkontur:</label>
+        <select id="ghost-select">
+          <option value="">(av)</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn secondary" id="btn-reset">Nollställ</button>
+        <button class="btn secondary" id="btn-random">Slumpa</button>
+        <button class="btn" id="btn-match">Visa min match</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== VY: RESULTAT ===================== -->
+  <section id="view-resultat" class="view" data-view="resultat">
+    <a href="#" class="back-link" data-nav="prioritering">&larr; Ändra mina prioriteringar</a>
+    <div class="card">
+      <div class="top-match" id="top-match"></div>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn secondary" id="btn-share">Kopiera delningslänk</button>
+      </div>
+      <p class="tooltip-msg" id="share-msg" role="status" aria-live="polite"></p>
+      <ol class="rank-list" id="rank-list"></ol>
+      <p class="disclaimer">Ingen officiell valkompass — bygger på vår tolkning av
+        partiernas program. Läs mer under <a href="#" data-nav="metod">Metod</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===================== VY: METOD ===================== -->
+  <section id="view-metod" class="view" data-view="metod">
+    <a href="#" class="back-link" data-nav="prioritering">&larr; Tillbaka</a>
+    <div class="card">
+      <h2>Hur har vi räknat?</h2>
+      <p>Varje partis valmanifest/partiprogram 2026 har lästs i sin helhet (juli 2026).
+        Poängen speglar <strong>relativ prioritering</strong>, bedömd utifrån:</p>
+      <ol>
+        <li>Hur framträdande området är i dokumentets struktur (egna kapitel, ordning, omfång).</li>
+        <li>Konkretionsgrad (skarpa, finansieringstunga löften väger tyngre än allmänna formuleringar).</li>
+        <li>Explicita ned-/bortprioriteringar (t.ex. &quot;inte utrymme för&hellip;&quot;, &quot;avvisar&hellip;&quot;).</li>
+      </ol>
+      <p>Poängen är normerade så att varje parti summerar till exakt 400. Skalan är
+        relativ inom partiet — 80 på migration betyder att området dominerar partiets
+        program, inte att partiet är &quot;för 80&nbsp;% migration&quot;.</p>
+      <p><strong>Poängen är en redaktionell tolkning. Partierna har inte medverkat.</strong>
+        Relativ prioritering ≠ sakpolitisk position: två partier kan ha samma poäng på
+        ett område men vilja motsatta saker. Verktyget mäter <em>var</em> partierna
+        lägger sin energi, inte <em>vad</em> de tycker.</p>
+
+      <h3>Datamatris</h3>
+      <div style="overflow-x:auto">
+        <table class="matrix" id="matrix-table"></table>
+      </div>
+
+      <h3>Motiveringar per parti</h3>
+      <div id="motivations"></div>
+
+      <h3>Källor</h3>
+      <ul class="source-list" id="source-list"></ul>
+
+      <p class="disclaimer">
+        Kända begränsningar: KD:s och V:s poäng bygger på princip-/partiprogram
+        (ej separata valmanifest 2026 per juli 2026) — prioriteringar kan skifta när
+        eventuella valmanifest publiceras. M:s vallöftessida uppdateras löpande fram
+        till valdagen; kodningen avser läget 2026-07-17.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">Prioriteringskompassen &middot; byggd inför valet 2026 &middot; ej en officiell valkompass</footer>
+
+<!--
+  ============================================================================
+  LOGIC — rena funktioner utan DOM-beroende. Detta block extraheras och körs
+  fristående av testsviten (test/zerosum.test.mjs) via Node vm, så exporterade
+  namn (DATA, ZeroSum, Match) deklareras med `var` för att bli tillgängliga som
+  egenskaper på vm-kontextens globala objekt.
+  ============================================================================
+-->
+<script id="logic">
+var DATA = {
+  totalBudget: 400,
+  min: 10,
+  max: 120,
+  axes: [
+    { id: "vard",      label: "Vård & omsorg" },
+    { id: "skola",     label: "Skola & utbildning" },
+    { id: "ekonomi",   label: "Ekonomi & skatter" },
+    { id: "arbete",    label: "Jobb & arbetsmarknad" },
+    { id: "trygghet",  label: "Brott & trygghet" },
+    { id: "migration", label: "Migration & integration" },
+    { id: "forsvar",   label: "Försvar & säkerhet" },
+    { id: "klimat",    label: "Klimat & miljö" }
+  ],
+  parties: [
+    {
+      id: "S", name: "Socialdemokraterna", color: "#E8112d",
+      scores: [60, 60, 60, 60, 55, 40, 45, 20],
+      source: "Valplattform / val-2026 (socialdemokraterna.se/val-2026)",
+      motivation: "Tre likvärdiga huvudpelare: stark ekonomi i plånboken (plånbokslöfte, tillväxtplan), stark välfärd (kortare vårdköer, mindre klasser, vinstförbud i skolan, äldreomsorg) och trygghet. Jobbpolitiken bred (jobbtrappa, aktivitetsplikt, slopad karens). Migration: 'strama linjen ligger fast' men få nya förslag. Totalförsvaret ska byggas ut. Klimat nämns främst som del av tillväxt/omställning, utan egen pelare – tydligt nedprioriterat relativt 2018/2022."
+    },
+    {
+      id: "M", name: "Moderaterna", color: "#52BDEC",
+      scores: [40, 40, 75, 55, 65, 45, 50, 30],
+      source: "Vallöften 2026 (moderaterna.se/valloften-2026) + Idéprogram 'Frihet och ansvar' (2021)",
+      motivation: "Vallöftena domineras av plånbok/skatt: 5 000 kr mer för barnfamiljer, höjt ISK-tak, sänkt pensionsskatt, skattefritt månadskort, slöserikommission i stället för skattehöjningar. Trygghet stark tvåa (10 000 poliskameror, fler vakter, dubbla straff för kvinnofrid). Försvar: drönarvärn 10 000 personer. Arbetslinjen genomsyrar idéprogrammet. Vård/skola finns men utan motsvarande skärpa i löftena. Klimat: teknik- och kärnkraftsoptimism, lägre profil."
+    },
+    {
+      id: "SD", name: "Sverigedemokraterna", color: "#DDDD00",
+      scores: [50, 35, 55, 40, 70, 80, 55, 15],
+      source: "Valplattform 2026 'Hemma i Sverige' (sd.se, PDF juli 2026)",
+      motivation: "Struktur 'Trygg – Fri – Svensk'. 'Svensk'-delen (stram invandring, assimilering, uppvärderat medborgarskap, återvandring, kamp mot islamism, svenska språket) är plattformens ideologiska kärna → högst poäng. 'Trygg': gängjakt, pedofilregister, fler poliser, totalförsvar, men även tandvård/närsjukhus/a-kassa (ger vård+arbete substans). 'Fri': sänkta skatter på el/drivmedel/mat, regelförenkling, landsbygd. Klimat explicit bortprioriterat: 'inte utrymme för ineffektiva klimatpolitiska satsningar'."
+    },
+    {
+      id: "C", name: "Centerpartiet", color: "#009933",
+      scores: [55, 40, 65, 50, 45, 35, 45, 65],
+      source: "Valmanifest 2026 'Sverige kan mer', 328 förslag (val2026.centerpartiet.se)",
+      motivation: "Sju huvudområden där 'Fler jobb' (slopad anställningsskatt, regelförenklingsmyndighet, stopp för kompetensutvisningar) och 'Minskade utsläpp' (halverade tillståndstider, fossilfri el, elbilsbonus) uttryckligen anges som partiets prioriteringar → högst poäng på ekonomi/företagande och klimat. 'Fungerande välfärd i hela landet' (fast läkarkontakt, ungas psykiska hälsa) och 50 mdr till landsbygden (fördelas ekonomi/vård). Rättsstat och försvar finns som egna områden men med mindre tyngd. Migration lägst profil."
+    },
+    {
+      id: "KD", name: "Kristdemokraterna", color: "#000077",
+      scores: [70, 45, 50, 45, 55, 45, 50, 40],
+      source: "Principprogram (kristdemokraterna.se, PDF 2025/2026)",
+      motivation: "Vård & omsorg är KD:s tydligaste profilområde: solidariskt finansierad vård som 'välfärdens kärna', vårdgarantier, äldreomsorg med värdighetsgarantier, familj som grund. Rättssamhälle/kriminalpolitik eget kapitel med brottsofferfokus. Försvar/säkerhet omfattande kapitel (Nato-artikel 5, totalförsvarsplikt). Migration: stram linje, hjälp i närområdet, krav för medborgarskap. Skola: valfrihet, ordning, fostransuppdrag. Förvaltarskapsprincipen ger klimatet en mellanposition."
+    },
+    {
+      id: "L", name: "Liberalerna", color: "#006AB3",
+      scores: [45, 75, 55, 40, 50, 45, 45, 45],
+      source: "Valmanifest 2026 'För din frihet' (liberalerna.se) + Partiprogram 2025 (PDF)",
+      motivation: "Skolan uttryckligen först: 'framtiden börjar i skolan', två av åtta manifestdelar är skola/trygg start (mindre barngrupper, ordning i klassrummet, världens bästa skola); partiprogrammet ägnar skolan störst utrymme av alla sakområden. 'Ansträngning ska löna sig' (sänkt skatt på utbildning/arbete, sparande) ger ekonomi tvåan. Skydd för friheten (brott, hedersförtryck) och husläkarreform. Försvar/EU/Nato och klimat (kärnkraftspositiv, EU-styrmedel) jämnstarka. Migration: integrationkrav + värnad asylrätt."
+    },
+    {
+      id: "V", name: "Vänsterpartiet", color: "#DA291C",
+      scores: [65, 50, 60, 70, 35, 35, 25, 60],
+      source: "Partiprogram antaget av kongressen 2024 (vansterpartiet.se/resursbank/partiprogram)",
+      motivation: "Full sysselsättning och arbetsplatsmakt är programmets röda tråd (arbetstidsförkortning, stärkt arbetsrätt, trygghetssystem) → högst poäng. Välfärd utan vinst (vård, skola, tandvård in i högkostnadsskyddet) och ekonomisk omfördelning (höjd skatt på förmögenhet/arv/höga inkomster, gemensamt ägande) väger tungt. Klimat: utsläppsbudget, stora statliga investeringar, nej till kärnkraft. Försvar tydligt nedprioriterat: sikte på att lämna Nato, nedrustning. Brott: förebyggande snarare än straff. Migration: human asylrätt men begränsat utrymme."
+    },
+    {
+      id: "MP", name: "Miljöpartiet", color: "#83CF39",
+      scores: [50, 45, 45, 45, 45, 40, 40, 90],
+      source: "Politiskt handlingsprogram 2026–2030 (mp.se, PDF april 2026)",
+      motivation: "Klimat/miljö dominerar totalt: tre inledande kapitel (rättvis klimatomställning, ekosystem/biologisk mångfald, djurvälfärd) med koldioxidbudget, klimatfond, nationell utsläppshandel, järnvägssatsning, havsmiljölag, nej till kärnkraft → 90. Övriga områden medvetet breda men sekundära: jämlik välfärd/psykisk hälsa, jämlik skola, trygghet med förebyggande fokus, human migration, grön ekonomi, stärkt beredskap. Försvar/beredskap finns (civilförsvar, desinformation) men lägst egen profil."
+    }
+  ]
+};
+
+var ZeroSum = (function () {
+  var MIN = DATA.min;
+  var MAX = DATA.max;
+  var TOTAL = DATA.totalBudget;
+  var N = DATA.axes.length;
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function isDragBlocked(locked) {
+    var n = 0;
+    for (var i = 0; i < locked.length; i++) if (locked[i]) n++;
+    return n >= 6;
+  }
+
+  // Largest-remainder rounding: floors every value, then distributes the
+  // remaining +1's to the largest fractional parts first, so the sum is
+  // always exactly TOTAL and axes never exceed MAX in the process.
+  function roundPreservingSum(values) {
+    var floors = values.map(Math.floor);
+    var sumFloors = floors.reduce(function (a, b) { return a + b; }, 0);
+    var remainder = Math.round(TOTAL - sumFloors);
+    var order = values
+      .map(function (v, i) { return { i: i, frac: v - floors[i] }; })
+      .sort(function (a, b) { return b.frac - a.frac; });
+    var result = floors.slice();
+    var given = 0;
+    for (var k = 0; k < order.length && given < remainder; k++) {
+      var i = order[k].i;
+      if (result[i] < MAX) { result[i] += 1; given++; }
+    }
+    // Best-effort fallback if everything is already at MAX (should not
+    // happen in practice given N=8, TOTAL=400, MAX=120).
+    for (var k2 = 0; k2 < order.length && given < remainder; k2++) {
+      result[order[k2].i] += 1; given++;
+    }
+    return result;
+  }
+
+  // Repairs an arbitrary (possibly out-of-bounds, non-integer) score vector
+  // into a valid one: integers, each within [MIN,MAX], summing to TOTAL.
+  // Used for randomProfile() and as a general safety net.
+  function repair(raw) {
+    var working = raw.slice();
+    var free = [];
+    for (var i = 0; i < working.length; i++) free.push(i);
+    var iterations = 0;
+    while (iterations < 8) {
+      iterations++;
+      var overflow = 0;
+      var nextFree = [];
+      for (var fi = 0; fi < free.length; fi++) {
+        var j = free[fi];
+        if (working[j] > MAX) { overflow += working[j] - MAX; working[j] = MAX; }
+        else if (working[j] < MIN) { overflow -= (MIN - working[j]); working[j] = MIN; }
+        else nextFree.push(j);
+      }
+      if (Math.abs(overflow) < 1e-9 || nextFree.length === 0) break;
+      // `overflow` is the amount removed from (or added to) the just-clamped
+      // axes; give it back to the still-free axes to keep the sum conserved.
+      var share = overflow / nextFree.length;
+      for (var nfi = 0; nfi < nextFree.length; nfi++) working[nextFree[nfi]] += share;
+      free = nextFree;
+    }
+    return roundPreservingSum(working);
+  }
+
+  // Core zero-sum redistribution. Moves axisIndex toward rawNewValue and
+  // proportionally absorbs the delta among unlocked axes, clamping any axis
+  // that would leave [MIN,MAX] and re-spreading the residual among the
+  // remaining free axes (max 8 iterations). If the free pool is exhausted
+  // before the full delta is absorbed, the dragged axis simply moves less
+  // than requested (delta is implicitly limited) — sum conservation is
+  // always exact because axisIndex absorbs exactly -(sum of others' change).
+  function redistribute(scores, axisIndex, rawNewValue, locked) {
+    locked = locked || scores.map(function () { return false; });
+    if (isDragBlocked(locked) || locked[axisIndex]) return scores.slice();
+
+    var targetValue = clamp(Math.round(rawNewValue), MIN, MAX);
+    var desiredDelta = targetValue - scores[axisIndex];
+    if (desiredDelta === 0) return scores.slice();
+
+    var movable = [];
+    for (var j = 0; j < scores.length; j++) {
+      if (j !== axisIndex && !locked[j]) movable.push(j);
+    }
+    if (movable.length === 0) return scores.slice();
+
+    var working = scores.slice();
+    var remaining = -desiredDelta;
+    var free = movable.slice();
+    var iterations = 0;
+
+    while (free.length > 0 && Math.abs(remaining) > 1e-9 && iterations < 8) {
+      iterations++;
+      var weightSum = 0;
+      for (var fi = 0; fi < free.length; fi++) weightSum += working[free[fi]];
+      if (weightSum <= 0) break;
+
+      var nextFree = [];
+      var absorbedThisRound = 0;
+      for (var k = 0; k < free.length; k++) {
+        var idx = free[k];
+        var share = working[idx] / weightSum;
+        var v = working[idx] + remaining * share;
+        if (v < MIN) v = MIN;
+        else if (v > MAX) v = MAX;
+        var change = v - working[idx];
+        working[idx] = v;
+        absorbedThisRound += change;
+        if (v > MIN && v < MAX) nextFree.push(idx);
+      }
+      remaining -= absorbedThisRound;
+      free = nextFree;
+    }
+
+    var actualOthersChange = 0;
+    for (var m = 0; m < movable.length; m++) {
+      actualOthersChange += (working[movable[m]] - scores[movable[m]]);
+    }
+    working[axisIndex] = clamp(scores[axisIndex] - actualOthersChange, MIN, MAX);
+
+    return roundPreservingSum(working);
+  }
+
+  function randomProfile(rng) {
+    rng = rng || Math.random;
+    var weights = [];
+    for (var i = 0; i < N; i++) weights.push(rng());
+    var sumW = weights.reduce(function (a, b) { return a + b; }, 0);
+    var raw = weights.map(function (w) { return MIN + (w / sumW) * (TOTAL - MIN * N); });
+    return repair(raw);
+  }
+
+  function neutralProfile() {
+    var base = TOTAL / N;
+    var arr = [];
+    for (var i = 0; i < N; i++) arr.push(base);
+    return roundPreservingSum(arr);
+  }
+
+  return {
+    MIN: MIN, MAX: MAX, TOTAL: TOTAL, N: N,
+    clamp: clamp,
+    isDragBlocked: isDragBlocked,
+    redistribute: redistribute,
+    randomProfile: randomProfile,
+    neutralProfile: neutralProfile,
+    roundPreservingSum: roundPreservingSum,
+    repair: repair
+  };
+})();
+
+var Match = (function () {
+  function dot(a, b) {
+    var s = 0;
+    for (var i = 0; i < a.length; i++) s += a[i] * b[i];
+    return s;
+  }
+  function magnitude(a) {
+    var s = 0;
+    for (var i = 0; i < a.length; i++) s += a[i] * a[i];
+    return Math.sqrt(s);
+  }
+  function cosineSimilarity(a, b) {
+    var mA = magnitude(a), mB = magnitude(b);
+    if (mA === 0 || mB === 0) return 0;
+    return dot(a, b) / (mA * mB);
+  }
+  function euclidean(a, b) {
+    var s = 0;
+    for (var i = 0; i < a.length; i++) s += (a[i] - b[i]) * (a[i] - b[i]);
+    return Math.sqrt(s);
+  }
+
+  // Precomputed theoretical max distance: constructs two feasible,
+  // maximally-separated profiles (first half of axes pushed to MAX in one,
+  // last half pushed to MAX in the other, within the fixed budget) and uses
+  // their distance as a fixed normalization constant. Not a proven global
+  // optimum, but a concrete, deterministic, feasible reference point.
+  function buildExtreme(order, MIN, MAX, TOTAL, N) {
+    var scores = [];
+    for (var i = 0; i < N; i++) scores.push(MIN);
+    var budget = TOTAL - MIN * N;
+    for (var oi = 0; oi < order.length; oi++) {
+      if (budget <= 0) break;
+      var room = MAX - MIN;
+      var add = Math.min(room, budget);
+      scores[order[oi]] += add;
+      budget -= add;
+    }
+    return scores;
+  }
+
+  function computeDMax(MIN, MAX, TOTAL, N) {
+    var idx = [];
+    for (var i = 0; i < N; i++) idx.push(i);
+    var half = Math.floor(N / 2);
+    var a = buildExtreme(idx.slice(0, half), MIN, MAX, TOTAL, N);
+    var b = buildExtreme(idx.slice(half), MIN, MAX, TOTAL, N);
+    return euclidean(a, b);
+  }
+
+  function computeMatches(userScores, parties, opts) {
+    opts = opts || {};
+    var MIN = opts.MIN != null ? opts.MIN : 10;
+    var MAX = opts.MAX != null ? opts.MAX : 120;
+    var TOTAL = opts.TOTAL != null ? opts.TOTAL : 400;
+    var N = userScores.length;
+    var dMax = computeDMax(MIN, MAX, TOTAL, N);
+
+    var results = parties.map(function (p) {
+      var cos = cosineSimilarity(userScores, p.scores);
+      var dist = euclidean(userScores, p.scores);
+      var d = dMax > 0 ? Math.max(0, Math.min(1, 1 - dist / dMax)) : 0;
+      var raw = 0.5 * cos + 0.5 * d;
+      var score = Math.max(0, Math.min(1, raw)) * 100;
+      return {
+        id: p.id, name: p.name, color: p.color,
+        source: p.source, motivation: p.motivation,
+        scores: p.scores,
+        matchPercent: score, cos: cos, distance: dist
+      };
+    });
+    results.sort(function (a, b) { return b.matchPercent - a.matchPercent; });
+    return results;
+  }
+
+  function topDifferences(userScores, partyScores, axes, n) {
+    n = n || 3;
+    var diffs = axes.map(function (ax, i) {
+      return { id: ax.id, label: ax.label, diff: userScores[i] - partyScores[i], userVal: userScores[i], partyVal: partyScores[i] };
+    });
+    diffs.sort(function (a, b) { return Math.abs(b.diff) - Math.abs(a.diff); });
+    return diffs.slice(0, n);
+  }
+
+  return {
+    cosineSimilarity: cosineSimilarity,
+    euclidean: euclidean,
+    computeDMax: computeDMax,
+    computeMatches: computeMatches,
+    topDifferences: topDifferences
+  };
+})();
+</script>
+
+<!--
+  ============================================================================
+  APP — DOM-rendering, interaktion, routing. Använder DATA/ZeroSum/Match från
+  logic-blocket ovan (samma top-level scope i klassiska <script>-taggar).
+  ============================================================================
+-->
+<script>
+(function () {
+  "use strict";
+
+  var MIN = ZeroSum.MIN, MAX = ZeroSum.MAX, TOTAL = ZeroSum.TOTAL, N = ZeroSum.N;
+
+  var state = {
+    scores: ZeroSum.neutralProfile(),
+    locked: DATA.axes.map(function () { return false; }),
+    ghostPartyId: "",
+    view: "intro",
+    matches: null
+  };
+
+  // ---------- URL serialisering ----------
+  function serializeProfile(scores) { return scores.join("."); }
+  function parseProfile(str) {
+    if (!str) return null;
+    var parts = str.split(".").map(Number);
+    if (parts.length !== N) return null;
+    for (var i = 0; i < parts.length; i++) {
+      if (!Number.isFinite(parts[i]) || parts[i] < MIN || parts[i] > MAX) return null;
+    }
+    var sum = parts.reduce(function (a, b) { return a + b; }, 0);
+    if (sum !== TOTAL) return null;
+    return parts;
+  }
+  function currentShareUrl() {
+    var url = new URL(window.location.href);
+    url.searchParams.set("p", serializeProfile(state.scores));
+    return url.toString();
+  }
+
+  function loadFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var parsed = parseProfile(params.get("p"));
+    if (parsed) {
+      state.scores = parsed;
+      return true;
+    }
+    return false;
+  }
+
+  // ---------- Router ----------
+  var views = {};
+  Array.prototype.forEach.call(document.querySelectorAll(".view"), function (el) {
+    views[el.getAttribute("data-view")] = el;
+  });
+
+  function navigate(view) {
+    state.view = view;
+    Object.keys(views).forEach(function (key) {
+      views[key].classList.toggle("active", key === view);
+    });
+    if (view === "prioritering") renderPrioritering();
+    if (view === "resultat") renderResultat();
+    if (view === "metod") renderMetod();
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+  }
+
+  document.addEventListener("click", function (e) {
+    var target = e.target.closest("[data-nav]");
+    if (target) {
+      e.preventDefault();
+      navigate(target.getAttribute("data-nav"));
+    }
+  });
+
+  document.getElementById("btn-start").addEventListener("click", function () {
+    navigate("prioritering");
+  });
+
+  // ---------- Prioriteringsvy: radar ----------
+  var svg = document.getElementById("radar");
+  var CX = 190, CY = 190, OUTER_R = 140, SCALE = OUTER_R / (MAX + 20);
+  var LABEL_R = OUTER_R + 26;
+
+  function angleFor(i) { return (-90 + i * (360 / N)) * Math.PI / 180; }
+  function pointFor(i, value) {
+    var a = angleFor(i);
+    return { x: CX + Math.cos(a) * value * SCALE, y: CY + Math.sin(a) * value * SCALE };
+  }
+  function polygonPoints(values) {
+    return values.map(function (v, i) { var p = pointFor(i, v); return p.x + "," + p.y; }).join(" ");
+  }
+
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    return el;
+  }
+
+  var dragState = null;
+
+  function buildRadarSkeleton() {
+    svg.innerHTML = "";
+    // grid rings
+    [25, 50, 75, 100].forEach(function (ringVal) {
+      var pts = [];
+      for (var i = 0; i < N; i++) pts.push(pointFor(i, ringVal));
+      svg.appendChild(svgEl("polygon", {
+        class: "grid-ring",
+        points: pts.map(function (p) { return p.x + "," + p.y; }).join(" ")
+      }));
+    });
+    // axis lines + labels
+    for (var i = 0; i < N; i++) {
+      var end = pointFor(i, MAX + 10);
+      svg.appendChild(svgEl("line", { class: "axis-line", x1: CX, y1: CY, x2: end.x, y2: end.y }));
+      var a = angleFor(i);
+      var lx = CX + Math.cos(a) * LABEL_R, ly = CY + Math.sin(a) * LABEL_R;
+      var anchor = Math.cos(a) > 0.3 ? "start" : (Math.cos(a) < -0.3 ? "end" : "middle");
+      var label = svgEl("text", {
+        class: "axis-label", x: lx, y: ly, "text-anchor": anchor,
+        "dominant-baseline": "middle", "data-axis-index": i,
+        tabindex: "0", role: "button",
+        "aria-label": "Lås/lås upp " + DATA.axes[i].label
+      });
+      label.textContent = DATA.axes[i].label;
+      label.addEventListener("click", function () {
+        var idx = Number(this.getAttribute("data-axis-index"));
+        toggleLock(idx);
+      });
+      label.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleLock(Number(this.getAttribute("data-axis-index")));
+        }
+      });
+      svg.appendChild(label);
+    }
+    // ghost shape placeholder
+    svg.appendChild(svgEl("polygon", { class: "ghost-shape", id: "ghost-poly", points: "" }));
+    // user shape
+    svg.appendChild(svgEl("polygon", { class: "user-shape", id: "user-poly", points: "" }));
+    // draggable points (+ larger invisible hit targets for touch)
+    for (var j = 0; j < N; j++) {
+      var hit = svgEl("circle", { class: "axis-point-hit", r: 22, "data-axis-index": j });
+      hit.addEventListener("pointerdown", onPointerDown);
+      svg.appendChild(hit);
+      var dot = svgEl("circle", { class: "axis-point", r: 7, "data-axis-index": j });
+      svg.appendChild(dot);
+      var valText = svgEl("text", { class: "axis-value", "data-axis-index": j, "text-anchor": "middle" });
+      svg.appendChild(valText);
+    }
+  }
+
+  function onPointerDown(e) {
+    var idx = Number(e.currentTarget.getAttribute("data-axis-index"));
+    if (state.locked[idx] || ZeroSum.isDragBlocked(state.locked)) return;
+    dragState = { idx: idx };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    document.addEventListener("pointermove", onPointerMove);
+    document.addEventListener("pointerup", onPointerUp);
+  }
+  function onPointerMove(e) {
+    if (!dragState) return;
+    var rect = svg.getBoundingClientRect();
+    var viewBoxScale = 380 / rect.width;
+    var x = (e.clientX - rect.left) * viewBoxScale;
+    var y = (e.clientY - rect.top) * viewBoxScale;
+    var a = angleFor(dragState.idx);
+    var ux = Math.cos(a), uy = Math.sin(a);
+    var vx = x - CX, vy = y - CY;
+    var proj = vx * ux + vy * uy;
+    var value = proj / SCALE;
+    applyAxisValue(dragState.idx, value);
+  }
+  function onPointerUp() {
+    dragState = null;
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", onPointerUp);
+  }
+
+  function applyAxisValue(idx, rawValue) {
+    state.scores = ZeroSum.redistribute(state.scores, idx, rawValue, state.locked);
+    renderState();
+  }
+
+  function toggleLock(idx) {
+    var lockedCount = state.locked.filter(Boolean).length;
+    if (!state.locked[idx] && lockedCount >= 6) return;
+    state.locked[idx] = !state.locked[idx];
+    renderState();
+  }
+
+  function updateLockTooltip() {
+    var el = document.getElementById("lock-tooltip");
+    el.textContent = ZeroSum.isDragBlocked(state.locked) ? "Lås upp minst två områden" : "";
+  }
+
+  function updateRadarVisual() {
+    document.getElementById("user-poly").setAttribute("points", polygonPoints(state.scores));
+    var ghost = document.getElementById("ghost-poly");
+    if (state.ghostPartyId) {
+      var party = DATA.parties.filter(function (p) { return p.id === state.ghostPartyId; })[0];
+      if (party) {
+        ghost.setAttribute("points", polygonPoints(party.scores));
+        ghost.setAttribute("style", "fill:" + party.color + ";stroke:" + party.color + ";display:block");
+      }
+    } else {
+      ghost.setAttribute("points", "");
+      ghost.setAttribute("style", "display:none");
+    }
+    for (var i = 0; i < N; i++) {
+      var p = pointFor(i, state.scores[i]);
+      var dot = svg.querySelector('.axis-point[data-axis-index="' + i + '"]');
+      var hit = svg.querySelector('.axis-point-hit[data-axis-index="' + i + '"]');
+      dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y);
+      hit.setAttribute("cx", p.x); hit.setAttribute("cy", p.y);
+      dot.classList.toggle("locked", state.locked[i]);
+      var label = svg.querySelector('.axis-label[data-axis-index="' + i + '"]');
+      label.classList.toggle("locked", state.locked[i]);
+      var valText = svg.querySelector('.axis-value[data-axis-index="' + i + '"]');
+      valText.setAttribute("x", p.x);
+      valText.setAttribute("y", p.y - 12);
+      valText.textContent = state.scores[i];
+    }
+  }
+
+  function buildSliders() {
+    var wrap = document.getElementById("sliders");
+    wrap.innerHTML = "";
+    DATA.axes.forEach(function (ax, i) {
+      var row = document.createElement("div");
+      row.className = "slider-row";
+      row.innerHTML =
+        '<label for="slider-' + ax.id + '">' + ax.label + '</label>' +
+        '<input type="range" id="slider-' + ax.id + '" min="' + MIN + '" max="' + MAX + '" step="1" data-axis-index="' + i + '" aria-label="' + ax.label + '">' +
+        '<output for="slider-' + ax.id + '"></output>';
+      wrap.appendChild(row);
+    });
+    wrap.addEventListener("input", function (e) {
+      if (e.target.matches("input[type=range]")) {
+        var idx = Number(e.target.getAttribute("data-axis-index"));
+        applyAxisValue(idx, Number(e.target.value));
+      }
+    });
+  }
+
+  function updateSlidersVisual() {
+    DATA.axes.forEach(function (ax, i) {
+      var input = document.getElementById("slider-" + ax.id);
+      input.value = state.scores[i];
+      input.disabled = state.locked[i] || ZeroSum.isDragBlocked(state.locked) && !state.locked[i] && false;
+      input.disabled = state.locked[i];
+      var out = input.nextElementSibling;
+      out.textContent = state.scores[i];
+    });
+  }
+
+  function buildGhostSelect() {
+    var sel = document.getElementById("ghost-select");
+    DATA.parties.forEach(function (p) {
+      var opt = document.createElement("option");
+      opt.value = p.id; opt.textContent = p.name;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", function () {
+      state.ghostPartyId = sel.value;
+      updateRadarVisual();
+    });
+  }
+
+  function updateBudgetIndicator() {
+    var sum = state.scores.reduce(function (a, b) { return a + b; }, 0);
+    document.getElementById("budget-value").textContent = sum;
+  }
+
+  function renderState() {
+    updateRadarVisual();
+    updateSlidersVisual();
+    updateBudgetIndicator();
+    updateLockTooltip();
+  }
+
+  var prioriteringBuilt = false;
+  function renderPrioritering() {
+    if (!prioriteringBuilt) {
+      buildRadarSkeleton();
+      buildSliders();
+      buildGhostSelect();
+      prioriteringBuilt = true;
+    }
+    renderState();
+  }
+
+  document.getElementById("btn-reset").addEventListener("click", function () {
+    state.scores = ZeroSum.neutralProfile();
+    state.locked = DATA.axes.map(function () { return false; });
+    renderState();
+  });
+  document.getElementById("btn-random").addEventListener("click", function () {
+    state.scores = ZeroSum.randomProfile();
+    state.locked = DATA.axes.map(function () { return false; });
+    renderState();
+  });
+  document.getElementById("btn-match").addEventListener("click", function () {
+    navigate("resultat");
+  });
+
+  // ---------- Resultatvy ----------
+  function renderResultat() {
+    state.matches = Match.computeMatches(state.scores, DATA.parties, { MIN: MIN, MAX: MAX, TOTAL: TOTAL });
+    var top = state.matches[0];
+    var topEl = document.getElementById("top-match");
+    topEl.innerHTML =
+      '<div class="swatch" style="background:' + top.color + '"></div>' +
+      '<div class="pct">' + top.matchPercent.toFixed(0) + '%</div>' +
+      '<div>Du prioriterar mest likt:</div>' +
+      '<div class="name">' + top.name + '</div>';
+
+    var list = document.getElementById("rank-list");
+    list.innerHTML = "";
+    state.matches.forEach(function (m, rank) {
+      var li = document.createElement("li");
+      li.className = "rank-row";
+      var details = document.createElement("details");
+      var summary = document.createElement("summary");
+      summary.innerHTML =
+        '<span class="rank-num">' + (rank + 1) + '</span>' +
+        '<span class="rank-bar-wrap"><div class="rank-name">' + m.name + '</div>' +
+        '<div class="rank-bar-track"><div class="rank-bar-fill" style="width:' + m.matchPercent.toFixed(1) + '%;background:' + m.color + '"></div></div></span>' +
+        '<span class="rank-pct">' + m.matchPercent.toFixed(0) + '%</span>';
+      var detailDiv = document.createElement("div");
+      detailDiv.className = "rank-detail";
+      var diffs = Match.topDifferences(state.scores, m.scores, DATA.axes, 3);
+      var diffChips = diffs.map(function (d) {
+        var sign = d.diff > 0 ? "du +" : "du ";
+        return '<span class="diff-chip">' + d.label + ": " + sign + d.diff + '</span>';
+      }).join("");
+      detailDiv.innerHTML =
+        '<svg class="mini-radar" viewBox="0 0 380 380" aria-hidden="true"></svg>' +
+        '<p class="motivation">' + m.motivation + '</p>' +
+        '<div class="diffs">' + diffChips + '</div>' +
+        '<a class="source" href="#" tabindex="-1">Källa: ' + m.source + '</a>';
+      details.appendChild(summary);
+      details.appendChild(detailDiv);
+      li.appendChild(details);
+      list.appendChild(li);
+
+      details.addEventListener("toggle", function () {
+        if (details.open) drawMiniRadar(detailDiv.querySelector(".mini-radar"), m);
+      });
+    });
+
+    history.replaceState(null, "", currentShareUrl());
+  }
+
+  function drawMiniRadar(el, party) {
+    if (el.dataset.drawn) return;
+    el.dataset.drawn = "1";
+    var cx = 190, cy = 190, r = 130, scale = r / (MAX + 20);
+    function pf(i, v) {
+      var a = (-90 + i * (360 / N)) * Math.PI / 180;
+      return { x: cx + Math.cos(a) * v * scale, y: cy + Math.sin(a) * v * scale };
+    }
+    function poly(values) { return values.map(function (v, i) { var p = pf(i, v); return p.x + "," + p.y; }).join(" "); }
+    [25, 50, 75, 100].forEach(function (ringVal) {
+      var pts = [];
+      for (var i = 0; i < N; i++) pts.push(pf(i, ringVal));
+      el.appendChild(svgEl("polygon", { class: "grid-ring", points: pts.map(function (p) { return p.x + "," + p.y; }).join(" ") }));
+    });
+    el.appendChild(svgEl("polygon", { points: poly(state.scores), style: "fill:rgba(43,43,40,0.15);stroke:var(--accent);stroke-width:2" }));
+    el.appendChild(svgEl("polygon", { points: poly(party.scores), style: "fill:" + party.color + "22;stroke:" + party.color + ";stroke-width:2;stroke-dasharray:4 3" }));
+  }
+
+  document.getElementById("btn-share").addEventListener("click", function () {
+    var url = currentShareUrl();
+    var msg = document.getElementById("share-msg");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () {
+        msg.textContent = "Länk kopierad!";
+      }).catch(function () {
+        msg.textContent = url;
+      });
+    } else {
+      msg.textContent = url;
+    }
+  });
+
+  // ---------- Metodvy ----------
+  var metodBuilt = false;
+  function renderMetod() {
+    if (metodBuilt) return;
+    metodBuilt = true;
+    var table = document.getElementById("matrix-table");
+    var thead = "<thead><tr><th>Område</th>" + DATA.parties.map(function (p) { return "<th>" + p.id + "</th>"; }).join("") + "</tr></thead>";
+    var rows = DATA.axes.map(function (ax, i) {
+      return "<tr><td>" + ax.label + "</td>" + DATA.parties.map(function (p) { return "<td>" + p.scores[i] + "</td>"; }).join("") + "</tr>";
+    }).join("");
+    var sumRow = "<tr><td><strong>Summa</strong></td>" + DATA.parties.map(function (p) {
+      return "<td><strong>" + p.scores.reduce(function (a, b) { return a + b; }, 0) + "</strong></td>";
+    }).join("") + "</tr>";
+    table.innerHTML = thead + "<tbody>" + rows + sumRow + "</tbody>";
+
+    var motivations = document.getElementById("motivations");
+    motivations.innerHTML = DATA.parties.map(function (p) {
+      return '<p><strong style="color:' + p.color + '">' + p.name + '</strong> — ' + p.motivation + '</p>';
+    }).join("");
+
+    var sourceList = document.getElementById("source-list");
+    sourceList.innerHTML = DATA.parties.map(function (p) {
+      return "<li><strong>" + p.id + ":</strong> " + p.source + "</li>";
+    }).join("");
+  }
+
+  // ---------- Init ----------
+  var hadValidUrlProfile = loadFromUrl();
+  navigate(hadValidUrlProfile ? "resultat" : "intro");
+})();
+</script>
+
+</body>
+</html>
